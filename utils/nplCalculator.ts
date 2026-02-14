@@ -33,8 +33,9 @@ export const calculateNPL = (inputs: NPLInputs): SimulationOutput => {
   
   const future_distribution_gain = max_mortgage_amount - estimated_principal;
   const overdue_interest = estimated_principal * overdueRateDec;
-  const incidental_cost_sum = (max_mortgage_amount * 0.03) + senior_takeover + pledge_interest_cost;
   const pledge_loan_amount = bond_purchase_price * pledgeLoanRateDec;
+  const calculated_pledge_interest_cost = pledge_loan_amount * interestRateDec;
+  const incidental_cost_sum = (max_mortgage_amount * 0.03) + senior_takeover + calculated_pledge_interest_cost;
   const min_investment_amount = bond_purchase_price - pledge_loan_amount;
 
   const min_margin = incidental_cost_sum;
@@ -122,6 +123,7 @@ export const calculateNPL = (inputs: NPLInputs): SimulationOutput => {
     overdue_interest,
     incidental_cost_sum,
     pledge_loan_amount,
+    calculated_pledge_interest_cost,
     min_investment_amount,
     min_margin,
     target_margin,

@@ -152,7 +152,13 @@ const App: React.FC = () => {
             </h2>
             <div className="space-y-4">
               <InputGroup label="선순위 인수금" value={inputs.senior_takeover} onChange={(v) => handleInputChange('senior_takeover', v)} suffix="원" />
-              <InputGroup label="질권 이자 비용" value={inputs.pledge_interest_cost} onChange={(v) => handleInputChange('pledge_interest_cost', v)} suffix="원" />
+              <div className="space-y-1">
+                <label className="text-[11px] font-black text-slate-500 ml-1 uppercase tracking-widest">질권 이자 비용</label>
+                <div className="flex justify-between items-center px-4 py-3 bg-emerald-50 border border-emerald-200 border-dashed rounded-2xl">
+                  <span className="text-[10px] font-black text-emerald-600 uppercase tracking-widest">자동계산 (질권대출 × 연이자율)</span>
+                  <span className="text-xs font-black text-emerald-700">{formatCurrency(results.calculated_pledge_interest_cost)}</span>
+                </div>
+              </div>
               <InputGroup label="질권대출 비율 (%)" value={inputs.pledge_loan_rate} onChange={(v) => handleInputChange('pledge_loan_rate', v)} suffix="%" type="number" />
               <InputGroup label="연 이자율 (%)" value={inputs.interest_rate} onChange={(v) => handleInputChange('interest_rate', v)} suffix="%" type="number" />
               <InputGroup label="연체 이자율 (%)" value={inputs.overdue_interest_rate} onChange={(v) => handleInputChange('overdue_interest_rate', v)} suffix="%" type="number" />

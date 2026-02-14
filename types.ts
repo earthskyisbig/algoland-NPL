@@ -33,6 +33,7 @@ export interface SimulationOutput {
   overdue_interest: number;
   incidental_cost_sum: number;
   pledge_loan_amount: number;
+  calculated_pledge_interest_cost: number;
   min_investment_amount: number;
   
   min_margin: number;

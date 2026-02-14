@@ -441,7 +441,7 @@ const App: React.FC = () => {
                 <div className={`max-w-[80%] px-7 py-5 rounded-[32px] text-sm leading-relaxed shadow-2xl ${
                   chat.role === 'user' ? 'bg-blue-600 text-white rounded-tr-none' : 'bg-slate-800 text-slate-100 rounded-tl-none border border-slate-700'
                 }`}>
-                  {chat.text}
+                  {chat.role === 'ai' ? <MarkdownText text={chat.text} /> : chat.text}
                 </div>
               </div>
             ))}
@@ -508,5 +508,62 @@ const ResultRow: React.FC<{label: string; value: string; highlight?: boolean}> =
     <span className={`font-black text-lg ${highlight ? 'text-blue-600' : 'text-slate-800'}`}>{value}</span>
   </div>
 );
+
+const MarkdownText: React.FC<{ text: string }> = ({ text }) => {
+  const lines = text.split('\n');
+  const elements: React.ReactNode[] = [];
+  let listItems: React.ReactNode[] = [];
+  let listType: 'ul' | 'ol' | null = null;
+  let key = 0;
+
+  const formatInline = (line: string): React.ReactNode[] => {
+    const parts: React.ReactNode[] = [];
+    const regex = /\*\*(.+?)\*\*/g;
+    let lastIndex = 0;
+    let match;
+    while ((match = regex.exec(line)) !== null) {
+      if (match.index > lastIndex) parts.push(line.slice(lastIndex, match.index));
+      parts.push(<strong key={`b-${key}-${match.index}`} className="font-black text-white">{match[1]}</strong>);
+      lastIndex = regex.lastIndex;
+    }
+    if (lastIndex < line.length) parts.push(line.slice(lastIndex));
+    return parts;
+  };
+
+  const flushList = () => {
+    if (listItems.length > 0) {
+      if (listType === 'ol') {
+        elements.push(<ol key={`ol-${key++}`} className="list-decimal list-inside space-y-1.5 my-3 ml-1">{listItems}</ol>);
+      } else {
+        elements.push(<ul key={`ul-${key++}`} className="list-disc list-inside space-y-1.5 my-3 ml-1">{listItems}</ul>);
+      }
+      listItems = [];
+      listType = null;
+    }
+  };
+
+  for (const line of lines) {
+    const trimmed = line.trim();
+    if (!trimmed) { flushList(); elements.push(<div key={`br-${key++}`} className="h-2" />); continue; }
+
+    // Headers
+    if (trimmed.startsWith('### ')) { flushList(); elements.push(<h4 key={`h-${key++}`} className="text-base font-black text-blue-400 mt-4 mb-2 tracking-tight">{formatInline(trimmed.slice(4))}</h4>); continue; }
+    if (trimmed.startsWith('## ')) { flushList(); elements.push(<h3 key={`h-${key++}`} className="text-lg font-black text-blue-400 mt-5 mb-2 tracking-tight">{formatInline(trimmed.slice(3))}</h3>); continue; }
+    if (trimmed.startsWith('# ')) { flushList(); elements.push(<h2 key={`h-${key++}`} className="text-xl font-black text-blue-400 mt-5 mb-3 tracking-tight">{formatInline(trimmed.slice(2))}</h2>); continue; }
+
+    // Bullet list
+    if (/^[-*]\s/.test(trimmed)) { if (listType !== 'ul') { flushList(); listType = 'ul'; } listItems.push(<li key={`li-${key++}`} className="text-slate-200">{formatInline(trimmed.slice(2))}</li>); continue; }
+
+    // Numbered list
+    if (/^\d+\.\s/.test(trimmed)) { if (listType !== 'ol') { flushList(); listType = 'ol'; } listItems.push(<li key={`li-${key++}`} className="text-slate-200">{formatInline(trimmed.replace(/^\d+\.\s/, ''))}</li>); continue; }
+
+    // Paragraph
+    flushList();
+    elements.push(<p key={`p-${key++}`} className="my-1.5 text-slate-200 leading-relaxed">{formatInline(trimmed)}</p>);
+  }
+  flushList();
+
+  return <div className="space-y-0.5">{elements}</div>;
+};
 
 export default App;
